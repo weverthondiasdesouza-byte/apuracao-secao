@@ -365,8 +365,8 @@ const REGIOES = ['Norte','Nordeste','Centro-Oeste','Sudeste','Sul','Exterior'];
 const LEVE = matchMedia('(max-width: 760px)').matches || !!(navigator.connection && navigator.connection.saveData);
 const LIMITE_RPS = LEVE ? 8 : 45;     // requisições por segundo (TSE permite 100/IP)
 const CONCORRENCIA = LEVE ? 5 : 24;   // seções lidas em paralelo
-const CICLO_CS_MS = LEVE ? 120000 : 60000;  // releitura da lista de seções de cada UF
-const CICLO_OF_MS = 45000;  // releitura do resultado oficial
+const CICLO_CS_MS = LEVE ? 60000 : 30000;   // releitura da lista de seções de cada UF
+const CICLO_OF_MS = 30000;  // releitura do resultado oficial
 
 const params = new URLSearchParams(location.hash.slice(1));
 const modo = MODOS[params.get('modo')] ? params.get('modo') : 'vivo';
