@@ -60,7 +60,9 @@ button{cursor:pointer;font-weight:600} button:disabled{cursor:default;opacity:.7
 /* grade */
 main{max-width:1320px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px;grid-template-columns:repeat(12,minmax(0,1fr))}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;min-width:0}
-.s12{grid-column:span 12}.s4{grid-column:span 4}.s7{grid-column:span 7}.s5{grid-column:span 5}.s6{grid-column:span 6}
+.s12{grid-column:span 12}.s4{grid-column:span 4}.s3{grid-column:span 3}
+@media(max-width:1180px){.s3{grid-column:span 6}}
+@media(max-width:640px){.s3{grid-column:span 12}}.s7{grid-column:span 7}.s5{grid-column:span 5}.s6{grid-column:span 6}
 @media(max-width:980px){.s7,.s5,.s6,.s4{grid-column:span 12}}
 .rot{margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .rot span:last-child{letter-spacing:.02em;text-transform:none;font-weight:500}
@@ -111,14 +113,14 @@ main{max-width:1320px;margin:0 auto;padding-block:18px 40px;padding-left:max(16p
 /* estados em destaque */
 .dest{position:relative;overflow:hidden;cursor:pointer}
 .dest::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--dest-cor,var(--line))}
-.dest .uf{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.dest .uf b{font-size:26px;font-weight:850;font-variation-settings:"wdth" 75;letter-spacing:-.01em;line-height:1}
+.dest .uf{display:flex;flex-direction:column;gap:4px}
+.dest .uf b{font-size:24px;font-weight:850;font-variation-settings:"wdth" 75;letter-spacing:-.01em;line-height:1}
 .dest .uf span{font-size:11px;color:var(--mut);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.dest .big{font-size:52px;font-weight:850;font-variation-settings:"wdth" 66;letter-spacing:-.03em;line-height:1;margin:14px 0 2px}
+.dest .big{font-size:clamp(40px,4vw,52px);font-weight:850;font-variation-settings:"wdth" 66;letter-spacing:-.03em;line-height:1;margin:14px 0 2px}
 .dest .big small{font-size:18px;font-weight:700;margin-left:3px}
 .dest .lbl{font-size:12.5px;color:var(--mut)}
 .dest .cmp{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 12px;margin-top:14px;font-variant-numeric:tabular-nums;font-size:13px;align-items:center}
-.dest .cmp .h{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.dest .cmp .h{white-space:nowrap;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
 .dest .cmp .r{text-align:right}
 .dest .of{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .dest .of b{color:var(--ink)} .dest .of b.L{color:var(--lula)} .dest .of b.F{color:var(--fla)}
@@ -241,9 +243,10 @@ footer{max-width:1320px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-rig
     <p class="nota" id="mNota">Só entram seções cujo boletim de urna do 2º turno já foi lido aqui; o 1º turno é o boletim da mesma seção (mesmo município, zona e número).</p>
   </section>
 
-  <section class="card dest s4" id="dest-mg" data-uf="mg"></section>
-  <section class="card dest s4" id="dest-sp" data-uf="sp"></section>
-  <section class="card dest s4" id="dest-ba" data-uf="ba"></section>
+  <section class="card dest s3" id="dest-mg" data-uf="mg"></section>
+  <section class="card dest s3" id="dest-sp" data-uf="sp"></section>
+  <section class="card dest s3" id="dest-ba" data-uf="ba"></section>
+  <section class="card dest s3" id="dest-go" data-uf="go"></section>
 
   <section class="card s12">
     <h2 class="rot"><span>Evolução da margem nas mesmas seções</span><span>p.p. dos válidos, 2º turno menos 1º turno</span></h2>
@@ -791,8 +794,8 @@ function desenharGrafico() {
   <div class="graf-leg"><span><span class="L">▲ Lula ganha terreno</span> · <span class="F">▼ Flávio ganha terreno</span> · escala ±${f1(ymax)} p.p.</span><b class="${ult.dm >= 0 ? 'L' : 'F'}">${nf.format(ult.n)} seções · ${sinal(ult.dm)} p.p.</b></div>`;
 }
 
-const DESTAQUES = ['mg', 'sp', 'ba'];
-const NOMES_UF = { mg: 'Minas Gerais', sp: 'São Paulo', ba: 'Bahia' };
+const DESTAQUES = ['mg', 'sp', 'ba', 'go'];
+const NOMES_UF = { mg: 'Minas Gerais', sp: 'São Paulo', ba: 'Bahia', go: 'Goiás' };
 const FINAL1 = {}; // resultado final do 1º turno por estado, somado dos boletins
 function calcularFinal1() {
   for (const uf of DESTAQUES) FINAL1[uf] = { l: 0, f: 0, o: 0, n: 0 };
@@ -817,7 +820,7 @@ function desenharDestaque(uf, sc) {
       <span class="h"></span><span class="h r">1º turno</span><span class="h r">2º turno</span>
       <span class="L">Lula</span><span class="r L">${a.n ? f1(m.pl1) + '%' : '—'}</span><b class="r L">${a.n ? f1(m.pl2) + '%' : '—'}</b>
       <span class="F">Flávio</span><span class="r F">${a.n ? f1(m.pf1) + '%' : '—'}</span><b class="r F">${a.n ? f1(m.pf2) + '%' : '—'}</b>
-      <span class="mut">Estado todo no 1º turno</span><span class="r mut" style="grid-column:span 2">${v1 ? `<span class="L">${f1(f1t.l / v1 * 100)}%</span> × <span class="F">${f1(f1t.f / v1 * 100)}%</span>` : '—'}</span>
+      <span class="mut">Estado no 1º turno</span><span class="r mut" style="grid-column:span 2">${v1 ? `<span class="L">${f1(f1t.l / v1 * 100)}%</span> × <span class="F">${f1(f1t.f / v1 * 100)}%</span>` : '—'}</span>
     </div>
     <div class="of">${ofTxt}</div>`;
 }
