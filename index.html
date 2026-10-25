@@ -232,7 +232,7 @@ footer{max-width:1320px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-rig
   </section>
 
   <section class="card s7">
-    <h2 class="rot"><span>Nas mesmas seções · 1º → 2º turno</span><span id="mN">—</span></h2>
+    <h2 class="rot"><span>Amostra do painel · mesmas seções nos dois turnos</span><span id="mN">—</span></h2>
     <div class="termo">
       <div class="valor num" id="mValor">—</div>
       <div class="frase" id="mHead">Aguardando os primeiros boletins<span class="mut">A margem é comparada urna por urna com o 1º turno.</span></div>
@@ -671,7 +671,7 @@ function desenhar() {
     const dL = a.l2 - a.l1, dF = a.f2 - a.f1;
     const d = (x) => `<span class="d">${x >= 0 ? '+' : '−'}${nf.format(Math.abs(x))}</span>`;
     $('mKv').innerHTML = `
-      <span class="h"></span><span class="h">1º turno</span><span class="h">2º turno</span>
+      <span class="h">Só nas seções lidas pelo painel</span><span class="h">1º turno</span><span class="h">2º turno</span>
       <span><b class="L">Lula</b> · % válidos</span><b class="L">${f2(m.pl1)}%</b><b class="L">${f2(m.pl2)}%</b>
       <span><b class="F">Flávio</b> · % válidos</span><b class="F">${f2(m.pf1)}%</b><b class="F">${f2(m.pf2)}%</b>
       <span>Margem Lula − Flávio</span><b>${sinal(m.pl1 - m.pf1, f2)} p.p.</b><b>${sinal(m.pl2 - m.pf2, f2)} p.p.</b>
@@ -683,7 +683,7 @@ function desenhar() {
     const ganhos = Math.max(0, dL) + Math.max(0, dF);
     $('mNota').innerHTML = (ganhos > 0 ? `Dos votos a mais que os dois receberam nessas seções, <b class="L">${f1(Math.max(0, dL) / ganhos * 100)}%</b> foram para Lula e <b class="F">${f1(Math.max(0, dF) / ganhos * 100)}%</b> para Flávio. ` : '') +
       (a.semPar ? `${nf.format(a.semPar)} seção(ões) sem par no 1º turno ficaram de fora. ` : '') +
-      'Comparação boletim a boletim, mesma seção nos dois turnos.';
+      'Comparação boletim a boletim, mesma seção nos dois turnos. Estes números valem só para as seções lidas aqui, que não são as mesmas que o TSE já totalizou; o placar oficial do país está no quadro “Oficial TSE”.';
     if (!historico.length || a.n - historico[historico.length - 1].n >= Math.max(20, a.n * 0.01)) historico.push({ n: a.n, dm: m.dm });
   }
   desenharGrafico();
