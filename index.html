@@ -55,7 +55,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .ctl{display:flex;gap:8px;flex-wrap:wrap}
 select,button,input{font:inherit;font-size:13px;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:7px 11px;min-width:0}
 select{padding-right:28px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px;background-repeat:no-repeat}
-button{cursor:pointer;font-weight:600} button:hover,select:hover{border-color:var(--mut)}
+button{cursor:pointer;font-weight:600} button:disabled{cursor:default;opacity:.7} button:hover,select:hover{border-color:var(--mut)}
 
 /* grade */
 main{max-width:1320px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px;grid-template-columns:repeat(12,minmax(0,1fr))}
@@ -171,6 +171,7 @@ footer{max-width:1320px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-rig
       <option value="novas">Mais recentes primeiro</option>
       <option value="antigas">Ordem de chegada</option>
     </select>
+    <button id="btnAtualizar" type="button">Atualizar agora</button>
     <button id="btnPausa" type="button">Pausar</button>
   </div>
 </div></div>
@@ -747,6 +748,20 @@ function preencherFiltros() {
   };
   $('selModo').value = modo;
   $('selModo').onchange = () => { location.hash = 'modo=' + $('selModo').value; location.reload(); };
+  $('btnAtualizar').onclick = async () => {
+    const b = $('btnAtualizar');
+    if (b.disabled) return;
+    b.disabled = true; b.textContent = 'Atualizando…';
+    try {
+      let i = 0;
+      await Promise.all([0, 1, 2, 3].map(async () => { while (i < UFS.length) await lerCs(UFS[i++]); }));
+      for (const abr of ['br', ...UFS]) { try { oficial[abr] = lerU(await pedir(urlU(abr))); } catch {} }
+      if (oficial.br) tseHora = oficial.br.hora;
+      sujo = true; desenhar();
+      b.textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch { b.textContent = 'Tente de novo'; }
+    setTimeout(() => { b.disabled = false; b.textContent = 'Atualizar agora'; }, 20000);
+  };
   $('btnPausa').onclick = () => { pausaManual = !pausaManual; $('btnPausa').textContent = pausaManual ? 'Continuar' : 'Pausar'; };
   for (const [n, id] of [[13, 'fotoL'], [22, 'fotoF']]) {
     const img = new Image();
