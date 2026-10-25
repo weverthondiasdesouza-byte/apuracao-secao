@@ -78,6 +78,7 @@ main{max-width:1320px;margin:0 auto;padding-block:18px 40px;padding-left:max(16p
 
 /* duelo oficial */
 .duelo{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.cand .vt{font-size:15px;font-weight:700;margin-top:4px}
 .cand .t1{font-size:12px;color:var(--mut);margin-top:4px}
 .cand{display:flex;gap:12px;align-items:center;min-width:0}
 .cand.dir{flex-direction:row-reverse;text-align:right}
@@ -223,8 +224,8 @@ footer{max-width:1320px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-rig
   <section class="card s5">
     <h2 class="rot"><span>Oficial TSE · 2º turno</span><span id="ofPst">aguardando 17h</span></h2>
     <div class="duelo">
-      <div class="cand l"><div class="foto" id="fotoL">L</div><div><div class="nm L">Lula</div><div class="pc num L" id="ofL">—</div><div class="t1">1º turno 45,16%</div></div></div>
-      <div class="cand f dir"><div class="foto" id="fotoF">F</div><div><div class="nm F">Flávio Bolsonaro</div><div class="pc num F" id="ofF">—</div><div class="t1">1º turno 47,03%</div></div></div>
+      <div class="cand l"><div class="foto" id="fotoL">L</div><div><div class="nm L">Lula</div><div class="pc num L" id="ofL">—</div><div class="vt num" id="ofLv"></div><div class="t1">1º turno 45,16%</div></div></div>
+      <div class="cand f dir"><div class="foto" id="fotoF">F</div><div><div class="nm F">Flávio Bolsonaro</div><div class="pc num F" id="ofF">—</div><div class="vt num" id="ofFv"></div><div class="t1">1º turno 47,03%</div></div></div>
     </div>
     <div class="cabo" aria-hidden="true"><i class="l" id="ofBarL" style="width:0"></i><i class="f" id="ofBarF" style="width:0"></i><span class="meio"></span></div>
     <div class="lege"><span>Percentual dos votos válidos</span><span>50% ao centro</span></div>
@@ -536,12 +537,13 @@ async function cicloCs() {
 }
 
 function lerU(j) {
-  let l = 0, f = 0;
+  let l = 0, f = 0, lv = 0, fv = 0;
   for (const c of j.carg || []) for (const ag of c.agr || []) for (const p of ag.par || []) for (const k of p.cand || []) {
     const pv = parseFloat(String(k.pvap).replace(',', '.')) || 0;
-    if (k.n === '13') l = pv; if (k.n === '22') f = pv;
+    if (k.n === '13') { l = pv; lv = +k.vap || 0; } if (k.n === '22') { f = pv; fv = +k.vap || 0; }
   }
-  return { pst: parseFloat(String(j.s?.pst ?? '0').replace(',', '.')) || 0, l, f, hora: `${j.dg} ${j.hg}` };
+  return { pst: parseFloat(String(j.s?.pst ?? '0').replace(',', '.')) || 0, st: +j.s?.st || 0, ts: +j.s?.ts || 0,
+    l, f, lv, fv, hora: `${j.dg} ${j.hg}` };
 }
 async function cicloOficial() {
   for (;;) {
@@ -650,9 +652,9 @@ function desenhar() {
 
   const o = oficial.br;
   if (o) {
-    $('ofPst').textContent = `${f2(o.pst)}% das seções totalizadas`;
+    $('ofPst').textContent = `${f2(o.pst)}% apurado · ${nf.format(o.st)} de ${nf.format(o.ts)} seções`;
     if (o.l + o.f > 0) {
-      $('ofL').textContent = f2(o.l) + '%'; $('ofF').textContent = f2(o.f) + '%';
+      $('ofL').textContent = f2(o.l) + '%'; $('ofF').textContent = f2(o.f) + '%'; $('ofLv').textContent = nf.format(o.lv) + ' votos'; $('ofFv').textContent = nf.format(o.fv) + ' votos';
       $('ofBarL').style.width = o.l + '%'; $('ofBarF').style.width = o.f + '%';
     }
   }
@@ -809,7 +811,7 @@ function desenharDestaque(uf, sc) {
   el.style.setProperty('--dest-cor', cor);
   el.classList.toggle('sel', ufAtiva === uf);
   const ofTxt = of && of.l + of.f > 0
-    ? `<span>Oficial TSE <b>${f1(of.pst)}%</b> apurado</span><span><b class="L">${f2(of.l)}%</b> × <b class="F">${f2(of.f)}%</b></span>`
+    ? `<span>Oficial TSE <b>${f1(of.pst)}%</b> apurado · ${nf.format(of.st)} de ${nf.format(of.ts)} seções</span><span><b class="L">${f2(of.l)}%</b> × <b class="F">${f2(of.f)}%</b></span><span style="flex-basis:100%"><b class="L">${nf.format(of.lv)}</b> × <b class="F">${nf.format(of.fv)}</b> votos</span>`
     : `<span>Oficial TSE: ${of ? f1(of.pst) + '% apurado' : 'aguardando'}</span>`;
   el.innerHTML = `
     <div class="uf"><b>${NOMES_UF[uf]}</b><span>${a.n ? nf.format(a.n) + ' de ' + nf.format(f1t.n) + ' seções' : 'aguardando seções'}</span></div>
