@@ -115,8 +115,22 @@ main{max-width:1320px;margin:0 auto;padding-block:18px 40px;padding-left:max(16p
 @media(max-width:560px){.foto{display:none}.cand .pc{font-size:30px}.duelo{gap:10px}.rot span:last-child{display:none}#graf{height:150px}}
 
 /* regiões */
-.regs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-@media(max-width:1100px){.regs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.regs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:1101px){.regs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.mapa{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;max-width:460px;margin:0 auto}
+.tile{aspect-ratio:1;max-width:100%;border-radius:10px;background:var(--sunk);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:0;font:inherit;color:var(--ink);transition:transform .15s,background-color .6s}
+.tile:hover{transform:scale(1.06)}
+.tile b{font-size:13px;font-weight:800;font-variation-settings:"wdth" 80;letter-spacing:.02em}
+.tile small{font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums;opacity:.9}
+.tile.forte{color:#fff;border-color:transparent}
+.tile.sel{outline:2px solid var(--ink);outline-offset:1px}
+.mapa-leg{display:flex;align-items:center;gap:8px;justify-content:center;font-size:11px;color:var(--mut);margin-top:12px;flex-wrap:wrap}
+.mapa-leg i{display:block;width:120px;height:8px;border-radius:99px;background:linear-gradient(90deg,var(--fla),var(--sunk),var(--lula))}
+.agora{grid-column:span 12;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--ink);color:var(--surface);border-radius:12px;padding:10px 16px;font-size:13px;min-width:0}
+.agora .lbl{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--live);display:flex;align-items:center;gap:6px}
+.agora .lbl i{width:7px;height:7px;border-radius:50%;background:var(--live)}
+.agora .txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 200px}
+.agora .chip{font-size:12px}
 @media(max-width:560px){.regs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .reg{background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;cursor:pointer;text-align:left;font-weight:400;display:block;width:100%}
 .reg.ativo{border-color:var(--ink)}
@@ -186,6 +200,8 @@ footer{max-width:1320px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-rig
     <div><small>Última atualização TSE</small><b class="num" id="sTse" style="font-size:17px;padding-top:4px">—</b></div>
   </div>
 
+  <div class="agora" id="agora" hidden><span class="lbl"><i></i>Última urna</span><span class="txt" id="agoraTxt"></span></div>
+
   <section class="card s5">
     <h2 class="rot"><span>Oficial TSE · 2º turno</span><span id="ofPst">aguardando 17h</span></h2>
     <div class="duelo">
@@ -214,8 +230,13 @@ footer{max-width:1320px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-rig
     <div id="grafBox"><div class="graf-vazio">O gráfico aparece com as primeiras dezenas de seções.</div></div>
   </section>
 
-  <section class="card s12">
-    <h2 class="rot"><span>Por região</span><span>toque numa região para filtrar as seções; toque de novo para ver todas</span></h2>
+  <section class="card s5">
+    <h2 class="rot"><span>Mapa da virada</span><span>toque num estado para filtrar</span></h2>
+    <div class="mapa" id="mapa"></div>
+    <div class="mapa-leg"><span class="F">Flávio ganha terreno</span><i></i><span class="L">Lula ganha terreno</span></div>
+  </section>
+  <section class="card s7">
+    <h2 class="rot"><span>Por região</span><span>toque para filtrar; toque de novo para ver todas</span></h2>
     <div class="regs" id="regs"></div>
   </section>
 
@@ -655,6 +676,19 @@ function desenhar() {
       <div class="dv"><i style="${ac.n ? barraDv(mm.dm, sc) : ''}"></i><span class="z"></span></div></button>`;
   }).join('');
 
+  // mapa
+  $('mapa').innerHTML = desenharMapa(sc);
+  // última urna
+  const u = lidas[lidas.length - 1];
+  if (u) {
+    const nm = nomesMun.get(u.uf + u.mun) || u.nm || u.mun;
+    const v2 = u.l2 + u.f2 + u.o2;
+    const d1 = u.b ? (() => { const v1 = u.b[0] + u.b[1] + u.b[2]; return v1 && v2 ? ((u.l2 - u.f2) / v2 - (u.b[0] - u.b[1]) / v1) * 100 : null; })() : null;
+    $('agora').hidden = false;
+    $('agoraTxt').innerHTML = `${esc(nm)} · ${u.uf === 'zz' ? 'Exterior' : u.uf.toUpperCase()} · zona ${u.zona}, seção ${u.ns} — Lula ${v2 ? f1(u.l2 / v2 * 100) : '—'}% × Flávio ${v2 ? f1(u.f2 / v2 * 100) : '—'}%`;
+    const c = $('agora').querySelector('.chip'); if (c) c.remove();
+    if (d1 !== null) $('agora').insertAdjacentHTML('beforeend', chip(d1));
+  }
   // estados
   const pstTxt = (k) => oficial[k] ? f1(oficial[k].pst) + '%' : '—';
   let h = '<thead><tr><th>Estado</th><th>Seções</th><th>2º turno L × F</th><th>Δ margem</th><th>TSE</th></tr></thead><tbody>';
@@ -736,15 +770,42 @@ function desenharGrafico() {
   <div class="graf-leg"><span><span class="L">▲ Lula ganha terreno</span> · <span class="F">▼ Flávio ganha terreno</span> · escala ±${f1(ymax)} p.p.</span><b class="${ult.dm >= 0 ? 'L' : 'F'}">${nf.format(ult.n)} seções · ${sinal(ult.dm)} p.p.</b></div>`;
 }
 
+const GRADE = { rr:[0,2], ap:[0,4], am:[1,1], pa:[1,3], ma:[1,4], ce:[1,5], rn:[1,6], ac:[2,0], ro:[2,1], mt:[2,2], to:[2,3], pi:[2,4], pe:[2,5], pb:[2,6],
+  ms:[3,2], go:[3,3], df:[3,4], ba:[3,5], al:[3,6], pr:[4,2], sp:[4,3], mg:[4,4], es:[4,5], se:[4,6], sc:[5,2], rj:[5,4], rs:[6,2] };
+let ufAtiva = '';
+function desenharMapa(sc) {
+  const cel = [];
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) cel.push(null);
+  for (const [uf, [r, c]] of Object.entries(GRADE)) cel[r * 7 + c] = uf;
+  return cel.map((uf) => {
+    if (!uf) return '<span></span>';
+    const a = acum[uf], m = metricas(a);
+    let estilo = '', cls = '', val = '—';
+    if (a.n) {
+      const k = Math.min(1, Math.abs(m.dm) / sc);
+      const cor = m.dm >= 0 ? 'var(--lula)' : 'var(--fla)';
+      estilo = `background:color-mix(in srgb,${cor} ${Math.round(12 + k * 88)}%,var(--sunk))`;
+      if (k > 0.45) cls = ' forte';
+      val = sinal(m.dm);
+    }
+    return `<button type="button" class="tile${cls}${ufAtiva === uf ? ' sel' : ''}" data-uf="${uf}" style="${estilo}" title="${uf.toUpperCase()}: ${a.n ? `${nf.format(a.n)} seções, margem ${sinal(m.dm)} p.p.` : 'sem seções ainda'}"><b>${uf.toUpperCase()}</b><small>${val}</small></button>`;
+  }).join('');
+}
+
 // ======================= início =======================
 function preencherFiltros() {
   for (const r of REGIOES) $('fReg').insertAdjacentHTML('beforeend', `<option>${r}</option>`);
   for (const u of UFS) $('fUf').insertAdjacentHTML('beforeend', `<option value="${u}">${u === 'zz' ? 'Exterior' : u.toUpperCase()}</option>`);
-  for (const id of ['fReg', 'fUf', 'fOrd']) $(id).onchange = () => { if (id === 'fReg') { regiaoAtiva = $('fReg').value; sujo = true; desenhar(); } else desenharFeed(); };
+  for (const id of ['fReg', 'fUf', 'fOrd']) $(id).onchange = () => { if (id === 'fReg') { regiaoAtiva = $('fReg').value; sujo = true; desenhar(); } else if (id === 'fUf') { ufAtiva = $('fUf').value; sujo = true; desenhar(); } else desenharFeed(); };
   $('fMun').oninput = desenharFeed;
+  $('mapa').onclick = (e) => {
+    const b = e.target.closest('.tile'); if (!b) return;
+    ufAtiva = ufAtiva === b.dataset.uf ? '' : b.dataset.uf;
+    $('fUf').value = ufAtiva; $('fReg').value = ''; regiaoAtiva = ''; sujo = true; desenhar();
+  };
   $('regs').onclick = (e) => {
     const b = e.target.closest('.reg'); if (!b) return;
-    regiaoAtiva = regiaoAtiva === b.dataset.r ? '' : b.dataset.r; $('fReg').value = regiaoAtiva; $('fUf').value = ''; sujo = true; desenhar();
+    regiaoAtiva = regiaoAtiva === b.dataset.r ? '' : b.dataset.r; $('fReg').value = regiaoAtiva; $('fUf').value = ''; ufAtiva = ''; sujo = true; desenhar();
   };
   $('selModo').value = modo;
   $('selModo').onchange = () => { location.hash = 'modo=' + $('selModo').value; location.reload(); };
