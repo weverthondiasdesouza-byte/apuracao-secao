@@ -761,6 +761,8 @@ function preencherFiltros() {
   catch (e) { $('loadmsg').textContent = 'Não foi possível carregar a base do 1º turno: ' + e.message + '. Atualize a página.'; return; }
   $('loadmsg').textContent = `${nf.format(BASE1.size)} seções do 1º turno carregadas. Retomando leituras anteriores…`;
   await abrirDb(); await restaurar();
+  // refaz a curva a partir das leituras guardadas
+  { const s = novoAcum(); for (const r of lidas) { somar(s, r); if (s.n && (!historico.length || s.n - historico[historico.length - 1].n >= Math.max(20, s.n * 0.01))) historico.push({ n: s.n, dm: metricas(s).dm }); } }
   $('loading').remove();
   if (modo === 'ensaio') aviso('Modo ensaio: o “2º turno” aqui é o próprio 1º turno lido ao vivo do TSE. Todas as variações devem dar zero; serve só para conferir a leitura.', 'warn');
   cicloCs(); cicloOficial();
